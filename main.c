@@ -73,7 +73,7 @@ void load_file(const char *filename) {
     FILE *f = fopen(filename, "r");
     if (!f) {
         perror("file");
-        exit(1);
+        return ;
     }
 
     char buf[MAX_LEN];
@@ -152,13 +152,11 @@ int main(int argc, char **argv) {
     char *prgname = argv[0];
     int async = 1;
 
+    /* Load database from file which includes history and internal data. */
     int ret = openFile("tlm.db");
     if (ret != 0)
         return 1;
 
-    ret = openFile("tlm_history.db");
-    if (ret != 0)
-        return 1;
 
     initHistoryDb();
     loadHistoryFromDb();
@@ -171,9 +169,6 @@ int main(int argc, char **argv) {
     linenoiseSetCompletionCallback(completion);
     linenoiseSetHintsCallback(hints);
 
-    /* Load history from file. The history file is just a plain text file
-     * where entries are separated by newlines. */
-    // linenoiseHistoryLoad("history.txt"); /* Load the history at startup */
 
     /* Now this is the main loop of the typical linenoise-based application.
      * The call to linenoise() will block as long as the user types something
@@ -183,10 +178,6 @@ int main(int argc, char **argv) {
      * linenoise, so the user needs to free() it. */
 
     while(1) {
-        // if (!async) {
-        //     line = linenoise("tlm> ");
-        //     if (line == NULL) break;
-        // } else {
         if (async) {
             /* Asynchronous mode using the multiplexing API: wait for
              * data on stdin, and simulate async data coming from some source
@@ -214,11 +205,7 @@ int main(int argc, char **argv) {
                      * (CTRL+C/D). */
                     if (line != linenoiseEditMore) break;
 		} else {
-		    // // Timeout occurred
-		    //               static int counter = 0;
-		    //               linenoiseHide(&ls);
-		    // printf("Async output %d.\n", counter++);
-		    //               linenoiseShow(&ls);
+		    // Timeout occurred
 		}
             }
             linenoiseEditStop(&ls);
@@ -228,12 +215,9 @@ int main(int argc, char **argv) {
         /* Do something with the string. */
         if (line[0] != '\0' && line[0] != '/') {
             printf("echo: '%s'\n", line); /* Now added for debugging purposes later to be removed */
-            // linenoiseHistoryAdd(line); /* Add to the history. */
-            // linenoiseHistorySave("history.txt"); /* Save the history on disk. */
             addHistoryEntry(line);
 
             char* query = processLine(line); /* Processing line starts here. */
-            // printf("Query: %s\n", query);
             if (query == NULL) {
                 printf("Invalid Query\n");
                 continue;
@@ -259,6 +243,7 @@ int main(int argc, char **argv) {
         } else if (line[0] == '/') {
             printf("Unreconized command: %s\n", line);
         }
+
         free(line);
     }
     return 0;

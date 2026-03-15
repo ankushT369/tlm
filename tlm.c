@@ -163,7 +163,7 @@ static char* queryBuilderRm(struct tokens* arr, int count) {
 }
 
 static char* queryBuilderUpdate(struct tokens* arr, int count) {
-    if (count < 3 && count > 5) {
+    if (count < 3 || count > 5) {
         printf("Error: Not enough tokens for UPDATE query\n");
         return NULL;
     }
