@@ -53,3 +53,9 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+app
+tlm
+exp/
+build/
+sqlite-src-3510300/
