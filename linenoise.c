@@ -1760,3 +1760,9 @@ int linenoiseHistoryLoad(const char *filename) {
     fclose(fp);
     return 0;
 }
+
+/* Get the history array pointer */
+char** linenoiseHistoryGet(int* len) {
+    *len = history_len;
+    return history;
+}
