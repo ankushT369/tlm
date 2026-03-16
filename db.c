@@ -7,13 +7,21 @@
 
 DbContext ctx;
 
+int header_printed = 0;
+
 /* callback function for SELECT queries */
 static int callback(void *data, int argc, char **argv, char **colName) {
-  static int header_printed = 0;
-
   if (!header_printed) {
+    int len = 0;
     for (int i = 0; i < argc; i++) {
+      len += strnlen(colName[i], 5);
       printf("%s ", colName[i]);
+    }
+    printf("\n");
+
+    len += argc - 1;
+    for (int i = 0; i < len; i++) {
+      printf("%c", '-');
     }
     printf("\n");
     header_printed = 1;
@@ -94,6 +102,8 @@ int queryDb(Ops code, char *sql) {
   } else {
     rc = sqlite3_exec(ctx.db, sql, 0, 0, &err_msg);
   }
+
+  header_printed = 0;
 
   if (rc != SQLITE_OK) {
     printf("SQL error: %s\n", err_msg);
