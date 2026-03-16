@@ -12,6 +12,8 @@ typedef struct DbContext {
   // sqlite3 *history;
 } DbContext;
 
+extern int header_printed;
+
 /* API */
 int openFile(const char *file);
 int queryDb(Ops code, char *sql);

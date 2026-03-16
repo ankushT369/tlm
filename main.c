@@ -179,14 +179,48 @@ char *hints(const char *buf, int *color, int *bold) {
   return return_completion_substring(buf);
 }
 
+static void print_usage(const char *prog) {
+  printf("Usage: %s [OPTIONS]\n", prog);
+  printf("\n");
+  printf("Options:\n");
+  printf("  --help               Show this help message\n");
+  printf("  --file <filename>    Use a specific database file\n");
+}
+
 int main(int argc, char **argv) {
   char *line;
   char *prgname = argv[0];
   int async = 1;
   double start_time, end_time, elapsed;
 
+  const char *db_file = "tlm.db";
+
+  for (int i = 1; i < argc; i++) {
+
+    if (strcmp(argv[i], "--help") == 0) {
+      print_usage(prgname);
+      return 0;
+    }
+
+    else if (strcmp(argv[i], "--file") == 0) {
+      if (i + 1 >= argc) {
+        fprintf(stderr, "--file requires a filename\n");
+        return 1;
+      }
+
+      db_file = argv[i + 1];
+      i++;
+    }
+
+    else {
+      fprintf(stderr, "Unknown option: %s\n", argv[i]);
+      print_usage(prgname);
+      return 1;
+    }
+  }
+
   /* Load database from file which includes history and internal data. */
-  int ret = openFile("tlm.db");
+  int ret = openFile(db_file);
   if (ret != 0)
     return 1;
 
