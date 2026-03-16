@@ -1,0 +1,21 @@
+create dblink
+
+add dblink https://postgresql.org/ 'postgres link'
+update dblink link=http://postgresql.org/ title='postgres link' 
+rm dblink link=www.google.com
+rm dblink title=google
+
+/* Later */ search dblink title='postgres link'
+
+
+/* commands */
+/search title // what this does ? it take your terminal cursor to downward where i can give user input then prints
+              // all the list of title which matches subsequence matching as i type on downward the upper list changes in real time.
+              // Also here I can click my upward arrow to select
+
+/start        // This also act same as '/search arg' but here the default arg is link 
+
+
+update dblink link' 'do
+01234567891111111111222
+          0123456789012

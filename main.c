@@ -139,6 +139,17 @@ void m() {
     endwin();
 }
 
+static char* return_completion_substring(const char* buf) {
+    int len;
+    char** history = linenoiseHistoryGet(&len);    
+    for(int i = len - 1; i >= 0; i--) {
+        if (strncmp(history[i], buf, strlen(buf)) == 0) {
+            return history[i] + strlen(buf);
+        }
+    }
+    return NULL;
+}
+
 void completion(const char *buf, linenoiseCompletions *lc) {
     if (buf[0] == 'c') {
         linenoiseAddCompletion(lc,"create");
@@ -162,12 +173,12 @@ void completion(const char *buf, linenoiseCompletions *lc) {
 }
 
 char *hints(const char *buf, int *color, int *bold) {
-    if (!strcasecmp(buf,"hello")) {
-        *color = 35;
-        *bold = 0;
-        return " World";
-    }
-    return NULL;
+    if (!strcasecmp(buf,""))
+        return NULL;
+
+    *color = 35;
+    *bold = 0;
+    return return_completion_substring(buf);
 }
 
 int main(int argc, char **argv) {
