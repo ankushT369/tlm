@@ -2,7 +2,6 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <ctype.h>
 
 #include "tlm.h"
 #include "ops.h"
@@ -55,9 +54,14 @@ static char* queryBuilderShow(struct tokens* arr, int count) {
 
     char *arg = arr[1].token;
 
-    if (!strcmp(arg, "tlm")) {
+    if (!strncmp(arg, "tlm_history", 11)) {
+        return NULL;
+    }
+
+    if (!strncmp(arg, "tlm", 3)) {
         return queryBuilderShowTables();
     }
+
 
     return queryBuilderShowTable(arg);
 }
@@ -67,12 +71,12 @@ static char* queryBuilderCreate(struct tokens* arr, int count) {
         return NULL;
 
     char *table_name = arr[1].token;
-    if (!strcmp(table_name, "tlm")) {
+    if (!strncmp(table_name, "tlm", 3)) {
         printf("Error: 'tlm' is a reserved keyword and cannot be used as a table name.\n");
         return NULL;
     }
 
-    if (!strcmp(table_name, "tlm_history")) {
+    if (!strncmp(table_name, "tlm_history", 11)) {
         printf("Error: 'tlm_history' is a reserved keyword and cannot be used as a table name.\n");
         return NULL;
     }
@@ -99,12 +103,12 @@ static char* queryBuilderAdd(struct tokens* arr, int count) {
     char *link  = arr[2].token;
     char *title = arr[3].token;
 
-    if (!strcmp(table, "tlm")) {
+    if (!strncmp(table, "tlm", 3)) {
         printf("Error: 'tlm' is a reserved keyword and cannot be used as a table name.\n");
         return NULL;
     }
 
-    if (!strcmp(table, "tlm_history")) {
+    if (!strncmp(table, "tlm_history", 11)) {
         printf("Error: 'tlm_history' is a reserved keyword and cannot be used as a table name.\n");
         return NULL;
     }
@@ -134,12 +138,12 @@ static char* queryBuilderRm(struct tokens* arr, int count) {
     char *table = arr[1].token;
     char *condition = arr[2].token;
 
-    if (!strcmp(table, "tlm")) {
+    if (!strncmp(table, "tlm", 3)) {
         printf("Error: 'tlm' is a reserved keyword and cannot be used as a table name.\n");
         return NULL;
     }
 
-    if (!strcmp(table, "tlm_history")) {
+    if (!strncmp(table, "tlm_history", 11)) {
         printf("Error: 'tlm_history' is a reserved keyword and cannot be used as a table name.\n");
         return NULL;
     }
@@ -170,12 +174,12 @@ static char* queryBuilderUpdate(struct tokens* arr, int count) {
     
     char* table_name = arr[1].token;
     
-    if (!strcmp(table_name, "tlm")) {
+    if (!strncmp(table_name, "tlm", 3)) {
         printf("Error: 'tlm' is a reserved keyword and cannot be used as a table name.\n");
         return NULL;
     }
 
-    if (!strcmp(table_name, "tlm_history")) {
+    if (!strncmp(table_name, "tlm_history", 11)) {
         printf("Error: 'tlm_history' is a reserved keyword and cannot be used as a table name.\n");
         return NULL;
     }

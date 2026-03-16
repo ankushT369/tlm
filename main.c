@@ -8,6 +8,7 @@
 #include "tlm.h"
 #include "db.h"
 
+#include <time.h>
 #include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,6 +27,13 @@ char query[MAX_LEN];
 int query_len = 0;
 
 int selected = 0;
+
+
+static double current_time_millis() {
+    struct timespec now;
+    timespec_get(&now, TIME_UTC);
+    return (double)now.tv_sec * 1000.0 + (double)now.tv_nsec / 1000000.0;
+}
 
 int is_subsequence(const char *pattern, const char *text) {
     int j = 0;
@@ -132,9 +140,24 @@ void m() {
 }
 
 void completion(const char *buf, linenoiseCompletions *lc) {
-    if (buf[0] == 'h') {
-        linenoiseAddCompletion(lc,"hello");
-        linenoiseAddCompletion(lc,"hello there");
+    if (buf[0] == 'c') {
+        linenoiseAddCompletion(lc,"create");
+    }
+
+    if (buf[0] == 'a') {
+        linenoiseAddCompletion(lc,"add");
+    }
+
+    if (buf[0] == 'u') {
+        linenoiseAddCompletion(lc,"update");
+    }
+
+    if (buf[0] == 'r') {
+        linenoiseAddCompletion(lc,"rm");
+    }
+
+    if (buf[0] == 's') {
+        linenoiseAddCompletion(lc,"show");
     }
 }
 
@@ -151,6 +174,7 @@ int main(int argc, char **argv) {
     char *line;
     char *prgname = argv[0];
     int async = 1;
+    double start_time, end_time, elapsed;
 
     /* Load database from file which includes history and internal data. */
     int ret = openFile("tlm.db");
@@ -214,7 +238,7 @@ int main(int argc, char **argv) {
 
         /* Do something with the string. */
         if (line[0] != '\0' && line[0] != '/') {
-            printf("echo: '%s'\n", line); /* Now added for debugging purposes later to be removed */
+            // printf("echo: '%s'\n", line); /* Now added for debugging purposes later to be removed */
             addHistoryEntry(line);
 
             char* query = processLine(line); /* Processing line starts here. */
@@ -223,22 +247,32 @@ int main(int argc, char **argv) {
                 continue;
             }
 
+            /* Measure the db query latency */
+            start_time = current_time_millis();
             ret = queryDb(currentCode, query);
-            if (ret != 0)
-                continue;
+            end_time = current_time_millis();
 
-            printf("Execution Ok\n");
+            elapsed = end_time - start_time;
+
+            if (ret != 0) {
+                printf("Execution Failed %.3fms\n", elapsed);
+                continue;
+            }
+
+
+            printf("Execution Ok %.3fms\n", elapsed);
             free(query);
             
         } else if (!strncmp(line,"/historylen",11)) {
             /* The "/historylen" command will change the history len. */
-            int len = atoi(line+11);
-            linenoiseHistorySetMaxLen(len);
+            // int len = atoi(line+11);
+            // linenoiseHistorySetMaxLen(len);
         } else if (!strncmp(line, "/mask", 5)) {
             linenoiseMaskModeEnable();
         } else if (!strncmp(line, "/unmask", 7)) {
             linenoiseMaskModeDisable();
         } else if (!strncmp(line, "/search", 7)) {
+            addHistoryEntry(line);
             m();
         } else if (line[0] == '/') {
             printf("Unreconized command: %s\n", line);

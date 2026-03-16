@@ -1,0 +1,95 @@
+Efficient algorithms improve runtime performance in large-scale systems.
+Data structures like trees and graphs optimize memory usage.
+Machine learning models require large datasets for training.
+Distributed systems enhance scalability and fault tolerance.
+Cloud computing enables on-demand resource allocation.
+Cybersecurity measures protect networks from unauthorized access.
+Operating systems manage hardware resources and process scheduling.
+Database indexing significantly speeds up query execution.
+Artificial intelligence powers modern automation solutions.
+Neural networks excel at pattern recognition tasks.
+Version control systems simplify collaborative software development.
+Object‑oriented programming supports modular and reusable code.
+Functional programming emphasizes immutability and pure functions.
+The compiler converts high-level code into machine instructions.
+APIs allow applications to communicate seamlessly.
+Big data technologies process massive datasets efficiently.
+Encryption ensures secure data transmission over networks.
+The CPU executes program instructions step by step.
+Concurrency allows multiple tasks to run simultaneously.
+Virtual machines emulate hardware environments for testing.
+Microservices architecture promotes independent service deployment.
+Containers provide lightweight application isolation.
+Data mining discovers meaningful patterns from large datasets.
+Blockchain ensures transparency and immutability in transactions.
+Quantum computing leverages qubits for parallel computation.
+The software development lifecycle guides project execution.
+Deep learning achieves remarkable accuracy in complex problems.
+Edge computing processes data closer to the source.
+The cache reduces memory access latency.
+A router directs network traffic between devices.
+Anomaly detection identifies unusual system behavior.
+The kernel is the core component of an operating system.
+HTTP is the foundation of web communication.
+Multithreading accelerates processing by dividing tasks.
+The DOM represents a webpage’s structure in memory.
+The GPU handles parallel graphical computations.
+Machine code consists of binary instructions for the processor.
+The stack stores function call data temporarily.
+The heap handles dynamic memory allocation.
+Refactoring improves code readability without changing functionality.
+Latency measures the time delay in data transmission.
+A firewall blocks malicious or unwanted network traffic.
+Data redundancy increases reliability in storage systems.
+Load balancing distributes requests across multiple servers.
+A framework provides reusable components for development.
+Cryptographic hashing ensures data integrity.
+Event-driven programming responds to user interactions and system events.
+The API endpoint returns structured data to clients.
+Multimodal AI integrates text, audio, and visual inputs.
+Search algorithms like BFS and DFS navigate graphs.
+A pointer stores the address of a memory location.
+Unit testing verifies individual components of software.
+Parallel computing divides tasks across many processors.
+A protocol defines rules for communication between systems.
+Tokenization breaks text into meaningful units for NLP tasks.
+The runtime environment executes program code.
+A CDN speeds up content delivery across geographic regions.
+Normalization improves database consistency.
+A hypervisor manages multiple virtual machines.
+Garbage collection automatically frees unused memory.
+The UI/UX design influences the usability of an application.
+The event loop handles asynchronous operations.
+A sensor network collects and transmits real‑time data.
+The command‑line interface provides text-based control.
+A binary tree organizes data hierarchically.
+An SDK includes tools needed for platform-specific development.
+A commit saves code changes to a repository.
+Data visualization simplifies complex insights.
+A digital signature verifies authenticity of documents.
+Responsive design adapts layouts to different screens.
+Log files record system activities for debugging.
+A packet contains data transmitted over a network.
+Static analysis checks code for errors without running it.
+A schema defines the structure of a database.
+A transaction ensures atomic operations in databases.
+A chatbot uses NLP to handle conversations.
+IoT devices communicate through low‑power protocols.
+An IDE provides tools for writing and debugging code.
+A sparse matrix stores mostly empty data efficiently.
+Predictive analytics forecasts trends using statistical models.
+Software patches fix vulnerabilities and bugs.
+A sandbox isolates untrusted code execution.
+A buffer temporarily holds data during transfer.
+Compression reduces file size for faster transfer.
+A render engine displays graphics and UI components.
+A subnet divides a network into logical segments.
+Rollback restores a system to a previous stable state.
+Feature engineering improves machine learning model accuracy.
+A scheduler allocates CPU time to processes.
+Middleware connects applications and services.
+The handshake process establishes secure connections.
+A semaphore controls concurrent access to shared resources.
+A repository stores project files and version history.
+Data preprocessing cleans and prepares raw data.
+The feedback loop enhances system adaptability.
