@@ -7,7 +7,13 @@
 
 DbContext ctx;
 
+#define MAX_LEN 4096
+
 int header_printed = 0;
+
+sqlite3_stmt *g_frag_stmt = NULL;  // for fragments
+sqlite3_stmt *g_union_stmt = NULL; // for final union query
+char query_buffer[BUF_LEN];
 
 /* callback function for SELECT queries */
 static int callback(void *data, int argc, char **argv, char **colName) {
@@ -32,6 +38,32 @@ static int callback(void *data, int argc, char **argv, char **colName) {
   }
 
   printf("\n");
+  return 0;
+}
+
+static int build_final_union_sql(char *out, size_t outsz) {
+  out[0] = '\0';
+
+  while (sqlite3_step(g_frag_stmt) == SQLITE_ROW) {
+    const unsigned char *txt = sqlite3_column_text(g_frag_stmt, 0);
+    if (!txt)
+      continue;
+
+    strncat(out, (const char *)txt, outsz - strlen(out) - 1);
+  }
+
+  // Remove trailing "UNION ALL " if present
+  size_t len = strlen(out);
+  const char *ending = "UNION ALL ";
+  size_t endlen = strlen(ending);
+
+  if (len >= endlen && memcmp(out + len - endlen, ending, endlen) == 0) {
+    out[len - endlen] = '\0';
+  }
+
+  sqlite3_finalize(g_frag_stmt);
+  g_frag_stmt = NULL;
+
   return 0;
 }
 
@@ -73,7 +105,7 @@ static void save_command_to_db(const char *cmd) {
 
 int openFile(const char *file) {
   int rc;
-  if (strlen(file) >= MAX_FILE_LEN) {
+  if (strlen(file) >= BUF_LEN) {
     printf("Cannot create file\n");
     return 1;
   }
@@ -140,6 +172,76 @@ void loadHistoryFromDb() {
     fprintf(stderr, "Load history error: %s\n", err);
     sqlite3_free(err);
   }
+}
+
+int getHistoryFromDb_init() {
+  const char *sql = "SELECT 'SELECT * FROM ' || name || ' UNION ALL ' "
+                    "FROM sqlite_master "
+                    "WHERE type='table' "
+                    "AND name <> 'tlm_history' "
+                    "AND name NOT LIKE 'sqlite_%';";
+
+  if (g_frag_stmt) {
+    sqlite3_finalize(g_frag_stmt);
+    g_frag_stmt = NULL;
+  }
+
+  int rc = sqlite3_prepare_v2(ctx.db, sql, -1, &g_frag_stmt, NULL);
+  if (rc != SQLITE_OK) {
+    fprintf(stderr, "prepare fragments error: %s\n", sqlite3_errmsg(ctx.db));
+    return -1;
+  }
+
+  return 0;
+}
+
+int prepareUnionStmt() {
+  char final_sql[MAX_LEN];
+  build_final_union_sql(final_sql, sizeof(final_sql));
+
+  if (strlen(final_sql) == 0) {
+    fprintf(stderr, "No tables found.\n");
+    return -1;
+  }
+
+  // Prepare real UNION query
+  int rc = sqlite3_prepare_v2(ctx.db, final_sql, -1, &g_union_stmt, NULL);
+  if (rc != SQLITE_OK) {
+    fprintf(stderr, "prepare union error: %s\n", sqlite3_errmsg(ctx.db));
+    return -1;
+  }
+
+  return 0;
+}
+
+int getHistoryFromDb_next(void) {
+  if (!g_union_stmt)
+    return -1;
+
+  int rc = sqlite3_step(g_union_stmt);
+
+  if (rc == SQLITE_ROW) {
+    query_buffer[0] = '\0';
+
+    int cols = sqlite3_column_count(g_union_stmt);
+    for (int i = 0; i < cols; i++) {
+      const char *txt = (const char *)sqlite3_column_text(g_union_stmt, i);
+      strcat(query_buffer, txt ? txt : "NULL");
+      if (i < cols - 1)
+        strcat(query_buffer, " ");
+    }
+
+    return 1; // delivered real row
+  }
+
+  if (rc == SQLITE_DONE) {
+    sqlite3_finalize(g_union_stmt);
+    g_union_stmt = NULL;
+    return 0;
+  }
+
+  fprintf(stderr, "step error\n");
+  return -1;
 }
 
 void addHistoryEntry(const char *cmd) {

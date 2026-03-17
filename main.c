@@ -15,7 +15,7 @@
 #include <time.h>
 
 #define MAX_ITEMS 1000000
-#define MAX_LEN 256
+#define MAX_LEN 1024
 
 char *items[MAX_ITEMS];
 int item_count = 0;
@@ -32,6 +32,14 @@ static double current_time_millis() {
   struct timespec now;
   timespec_get(&now, TIME_UTC);
   return (double)now.tv_sec * 1000.0 + (double)now.tv_nsec / 1000000.0;
+}
+
+static void free_items() {
+  for (int i = 0; i < item_count; i++) {
+    free(items[i]);
+  }
+
+  item_count = 0;
 }
 
 int is_subsequence(const char *pattern, const char *text) {
@@ -76,25 +84,23 @@ void draw() {
   refresh();
 }
 
-void load_file(const char *filename) {
-  FILE *f = fopen(filename, "r");
-  if (!f) {
-    perror("file");
+void load_history_from_db() {
+  if (getHistoryFromDb_init() != 0)
     return;
+  if (prepareUnionStmt() != 0)
+    return;
+
+  while (1) {
+    int r = getHistoryFromDb_next();
+    if (r <= 0)
+      break;
+
+    items[item_count++] = strdup(query_buffer);
   }
-
-  char buf[MAX_LEN];
-
-  while (fgets(buf, sizeof(buf), f)) {
-    buf[strcspn(buf, "\n")] = 0;
-    items[item_count++] = strdup(buf);
-  }
-
-  fclose(f);
 }
 
 void m() {
-  load_file("title.txt");
+  load_history_from_db();
 
   initscr();
   noecho();
@@ -123,7 +129,7 @@ void m() {
       filter_items();
     } else if (c == '\n') {
       endwin();
-      printf("Selected: %s\n", items[filtered[selected]]);
+      // printf("Selected: %s\n", items[filtered[selected]]);
       return;
     } else if (c >= 32 && c <= 126) {
       query[query_len++] = c;
@@ -283,10 +289,9 @@ int main(int argc, char **argv) {
     if (line[0] != '\0' && line[0] != '/') {
       // printf("echo: '%s'\n", line); /* Now added for debugging purposes later
       // to be removed */
-      addHistoryEntry(line);
-
       char *query = processLine(line); /* Processing line starts here. */
       if (query == NULL) {
+        addHistoryEntry(line);
         printf("Invalid Query\n");
         continue;
       }
@@ -308,6 +313,8 @@ int main(int argc, char **argv) {
       }
 
       printf("Execution Ok %.3fms\n", elapsed);
+      addHistoryEntry(line);
+
       free(query);
 
     } else if (!strncmp(line, "/historylen", 11)) {
@@ -319,8 +326,19 @@ int main(int argc, char **argv) {
     } else if (!strncmp(line, "/unmask", 7)) {
       linenoiseMaskModeDisable();
     } else if (!strncmp(line, "/search", 7)) {
-      addHistoryEntry(line);
-      m();
+      char *rest = line + 7;
+
+      while (*rest == ' ')
+        rest++;
+      if (*rest != '\0') {
+        // There IS more text after "/search"
+        printf("Has argument: '%s'\n", rest);
+      } else {
+        addHistoryEntry(line);
+        m();
+        printf("No argument!\n");
+      }
+      free_items();
     } else if (line[0] == '/') {
       printf("Unreconized command: %s\n", line);
     }

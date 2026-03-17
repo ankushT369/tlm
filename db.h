@@ -4,21 +4,28 @@
 #include "ops.h"
 #include "sqlite3.h"
 
-#define MAX_FILE_LEN 1024
+#include <stddef.h>
+
+#define BUF_LEN 1024
 
 typedef struct DbContext {
   sqlite3 *db;
-  char file[1024];
+  char file[BUF_LEN];
   // sqlite3 *history;
 } DbContext;
 
 extern int header_printed;
+extern char query_buffer[BUF_LEN];
 
 /* API */
 int openFile(const char *file);
 int queryDb(Ops code, char *sql);
 int initHistoryDb();
 void loadHistoryFromDb();
+void getHistoryFromDb();
 void addHistoryEntry(const char *line);
+int getHistoryFromDb_init();
+int getHistoryFromDb_next(void);
+int prepareUnionStmt();
 
 #endif // __DB__
