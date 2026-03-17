@@ -99,7 +99,7 @@ int linenoiseHistoryAdd(const char *line);
 int linenoiseHistorySetMaxLen(int len);
 int linenoiseHistorySave(const char *filename);
 int linenoiseHistoryLoad(const char *filename);
-char** linenoiseHistoryGet();
+char** linenoiseHistoryGet(int *len);
 
 /* Other utilities. */
 void linenoiseClearScreen(void);
