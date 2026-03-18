@@ -290,13 +290,16 @@ int main(int argc, char **argv) {
       // printf("echo: '%s'\n", line); /* Now added for debugging purposes later
       // to be removed */
       char *query = processLine(line); /* Processing line starts here. */
+
+      printf("[INFO] Query: %s\n", query);
       if (query == NULL) {
         addHistoryEntry(line);
         printf("Invalid Query\n");
+        free(query);
         continue;
       }
 
-      printf("\n");
+      // printf("\n");
 
       /* Measure the db query latency */
       start_time = current_time_millis();
@@ -309,6 +312,7 @@ int main(int argc, char **argv) {
 
       if (ret != 0) {
         printf("Execution Failed %.3fms\n", elapsed);
+        free(query);
         continue;
       }
 
