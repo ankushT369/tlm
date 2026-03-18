@@ -6,8 +6,11 @@
 #include "ops.h"
 #include "tlm.h"
 
+#define MAX_QUERY_LEN 8192
+
 struct tokens token_array[10]; // Array of token structs
-int token_count = 0;
+unsigned int token_count = 0;
+char query_line[MAX_QUERY_LEN];
 
 static void strip_quotes(char *str) {
   size_t len = strlen(str);
@@ -67,30 +70,29 @@ static char *queryBuilderCreate(struct tokens *arr, int count) {
   if (count != 2)
     return NULL;
 
-  char *table_name = arr[1].token;
-  if (!strncmp(table_name, "tlm", 3)) {
-    printf("Error: 'tlm' is a reserved keyword and cannot be used as a table "
-           "name.\n");
+  char *table= arr[1].token;
+
+  if (strcmp(table, "tlm") == 0) {
+    printf("Error: 'tlm' is a reserved keyword.\n");
     return NULL;
   }
 
-  if (!strncmp(table_name, "tlm_history", 11)) {
-    printf("Error: 'tlm_history' is a reserved keyword and cannot be used as a "
-           "table name.\n");
+  if (strcmp(table, "tlm_history") == 0) {
+    printf("Error: 'tlm_history' is a reserved keyword.\n");
     return NULL;
   }
 
   size_t size =
-      strlen("CREATE TABLE  (id INTEGER PRIMARY KEY, link TEXT, title TEXT);") +
-      strlen(table_name) + 1;
+      strlen("CREATE TABLE  (id INTEGER PRIMARY KEY, link TEXT, title TEXT, UNIQUE(link, title));") +
+      strlen(table) + 1;
 
   char *query = malloc(size);
   if (!query)
     return NULL;
 
-  sprintf(query,
-          "CREATE TABLE %s (id INTEGER PRIMARY KEY, link TEXT, title TEXT);",
-          table_name);
+  snprintf(query, size,
+           "CREATE TABLE %s (id INTEGER PRIMARY KEY, link TEXT, title TEXT, UNIQUE(link, title));",
+           table);
 
   return query;
 }
@@ -103,15 +105,13 @@ static char *queryBuilderAdd(struct tokens *arr, int count) {
   char *link = arr[2].token;
   char *title = arr[3].token;
 
-  if (!strncmp(table, "tlm", 3)) {
-    printf("Error: 'tlm' is a reserved keyword and cannot be used as a table "
-           "name.\n");
+  if (strcmp(table, "tlm") == 0) {
+    printf("Error: 'tlm' is a reserved keyword.\n");
     return NULL;
   }
 
-  if (!strncmp(table, "tlm_history", 11)) {
-    printf("Error: 'tlm_history' is a reserved keyword and cannot be used as a "
-           "table name.\n");
+  if (strcmp(table, "tlm_history") == 0) {
+    printf("Error: 'tlm_history' is a reserved keyword.\n");
     return NULL;
   }
 
@@ -137,15 +137,13 @@ static char *queryBuilderRm(struct tokens *arr, int count) {
   char *table = arr[1].token;
   char *condition = arr[2].token;
 
-  if (!strncmp(table, "tlm", 3)) {
-    printf("Error: 'tlm' is a reserved keyword and cannot be used as a table "
-           "name.\n");
+  if (strcmp(table, "tlm") == 0) {
+    printf("Error: 'tlm' is a reserved keyword.\n");
     return NULL;
   }
 
-  if (!strncmp(table, "tlm_history", 11)) {
-    printf("Error: 'tlm_history' is a reserved keyword and cannot be used as a "
-           "table name.\n");
+  if (strcmp(table, "tlm_history") == 0) {
+    printf("Error: 'tlm_history' is a reserved keyword.\n");
     return NULL;
   }
 
@@ -167,24 +165,21 @@ static char *queryBuilderUpdate(struct tokens *arr, int count) {
     return NULL;
   }
 
-  char *table_name = arr[1].token;
+  char *table = arr[1].token;
 
-  if (!strncmp(table_name, "tlm", 3)) {
-    printf("Error: 'tlm' is a reserved keyword and cannot be used as a table "
-           "name.\n");
+  if (strcmp(table, "tlm") == 0) {
+    printf("Error: 'tlm' is a reserved keyword.\n");
     return NULL;
   }
 
-  if (!strncmp(table_name, "tlm_history", 11)) {
-    printf("Error: 'tlm_history' is a reserved keyword and cannot be used as a "
-           "table name.\n");
+  if (strcmp(table, "tlm_history") == 0) {
+    printf("Error: 'tlm_history' is a reserved keyword.\n");
     return NULL;
   }
 
-  size_t query_size = strlen("UPDATE  SET ") + strlen(table_name) + 1;
+  size_t query_size = strlen("UPDATE  SET ") + strlen(table) + 1;
 
   int set_clause_start = 2;
-  int set_clause_count = count - set_clause_start;
 
   for (int i = set_clause_start; i < count; i++) {
     query_size += strlen(arr[i].token) + 2;
@@ -196,7 +191,7 @@ static char *queryBuilderUpdate(struct tokens *arr, int count) {
     return NULL;
   }
 
-  sprintf(query, "UPDATE %s SET ", table_name);
+  sprintf(query, "UPDATE %s SET ", table);
 
   for (int i = set_clause_start; i < count; i++) {
     strcat(query, arr[i].token);
@@ -288,8 +283,6 @@ void tokenize(char *str) {
     offset++;
   }
 
-  // printf("str: %s\n", str);
-
   // Get the first token
   token = strtok(str, " ");
 
@@ -304,11 +297,10 @@ void tokenize(char *str) {
     token = strtok(NULL, " ");
   }
 
-  int str_pos = 0;
-  // printf("len : %d\n", len);
+  unsigned int str_pos = 0;
 
-  for (int i = 0; i < token_count; i++) {
-    for (int j = 0; j < token_array[i].len; j++) {
+  for (unsigned int i = 0; i < token_count; i++) {
+    for (unsigned int j = 0; j < token_array[i].len; j++) {
       // Check if this position in original string had a space
       if (str_pos < len - (token_count - 1)) {
         // printf("str_pos : %d\n", str_pos);
@@ -336,18 +328,21 @@ static void resetTokens(void) {
   }
 
   token_count = 0;
+  memset(token_array, 0, sizeof(token_array));
 }
 
 static void debug_print() {
   printf("Tokens and their lengths:\n");
-  for (int i = 0; i < token_count; i++) {
+  for (unsigned int i = 0; i < token_count; i++) {
     printf("Token %d: \"%s\" (length: %u)\n", i, token_array[i].token,
            token_array[i].len);
   }
 }
 
 char *processLine(char *line) {
-  tokenize(line);
+  // Copy the original line to the buffer
+  memcpy(query_line, line, strnlen(line, MAX_QUERY_LEN));
+  tokenize(query_line);
 
   // printf("tokename: %s\n", token_array[0].token);
   Ops code = returnCommand(token_array[0].token);
@@ -357,7 +352,7 @@ char *processLine(char *line) {
     return NULL;
   }
 
-  // debug_print();
+  debug_print();
   char *query = queryBuilder(code, token_array, token_count);
   currentCode = code;
 
@@ -366,6 +361,7 @@ char *processLine(char *line) {
     return NULL;
   }
 
+  memset(query_line, '\0', MAX_QUERY_LEN);
   resetTokens();
   return query;
 }

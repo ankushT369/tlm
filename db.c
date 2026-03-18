@@ -7,7 +7,7 @@
 
 DbContext ctx;
 
-#define MAX_LEN 4096
+#define MAX_LEN 8192
 
 int header_printed = 0;
 
@@ -16,7 +16,8 @@ sqlite3_stmt *g_union_stmt = NULL; // for final union query
 char query_buffer[BUF_LEN];
 
 /* callback function for SELECT queries */
-static int callback(void *data, int argc, char **argv, char **colName) {
+static int callback(void *data __attribute__((unused)), int argc, char **argv, char **colName __attribute__((unused))) {
+
   if (!header_printed) {
     int len = 0;
     for (int i = 0; i < argc; i++) {
@@ -67,7 +68,7 @@ static int build_final_union_sql(char *out, size_t outsz) {
   return 0;
 }
 
-static int history_callback(void *data, int argc, char **argv, char **cols) {
+static int history_callback(void *data __attribute__((unused)), int argc, char **argv, char **cols __attribute__((unused))) {
   if (argc > 0 && argv[0]) {
     linenoiseHistoryAdd(argv[0]);
   }
@@ -113,12 +114,11 @@ int openFile(const char *file) {
   strcpy(ctx.file, file);
   // copy const char* file to ctx.file whose type is char file[1024]
 
-  char *err_msg = 0;
   /* open database */
   rc = sqlite3_open(ctx.file, &(ctx.db));
 
   if (rc != SQLITE_OK) {
-    printf("Cannot open database\n");
+    printf("Cannot open database: %s\n", sqlite3_errmsg(ctx.db));
     return 1;
   }
 
