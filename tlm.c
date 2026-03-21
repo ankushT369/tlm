@@ -70,7 +70,7 @@ static char *queryBuilderCreate(struct tokens *arr, int count) {
   if (count != 2)
     return NULL;
 
-  char *table= arr[1].token;
+  char *table = arr[1].token;
 
   if (strcmp(table, "tlm") == 0) {
     printf("Error: 'tlm' is a reserved keyword.\n");
@@ -82,16 +82,17 @@ static char *queryBuilderCreate(struct tokens *arr, int count) {
     return NULL;
   }
 
-  size_t size =
-      strlen("CREATE TABLE  (id INTEGER PRIMARY KEY, link TEXT, title TEXT, UNIQUE(link, title));") +
-      strlen(table) + 1;
+  size_t size = strlen("CREATE TABLE  (id INTEGER PRIMARY KEY, link TEXT, "
+                       "title TEXT, UNIQUE(link, title));") +
+                strlen(table) + 1;
 
   char *query = malloc(size);
   if (!query)
     return NULL;
 
   snprintf(query, size,
-           "CREATE TABLE %s (id INTEGER PRIMARY KEY, link TEXT, title TEXT, UNIQUE(link, title));",
+           "CREATE TABLE %s (id INTEGER PRIMARY KEY, link TEXT, title TEXT, "
+           "UNIQUE(link, title));",
            table);
 
   return query;
@@ -352,7 +353,7 @@ char *processLine(char *line) {
     return NULL;
   }
 
-  debug_print();
+  // debug_print();
   char *query = queryBuilder(code, token_array, token_count);
   currentCode = code;
 

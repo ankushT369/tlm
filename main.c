@@ -291,7 +291,7 @@ int main(int argc, char **argv) {
       // to be removed */
       char *query = processLine(line); /* Processing line starts here. */
 
-      printf("[INFO] Query: %s\n", query);
+      // printf("[INFO] Query: %s\n", query);
       if (query == NULL) {
         addHistoryEntry(line);
         printf("Invalid Query\n");
