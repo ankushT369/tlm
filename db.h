@@ -11,7 +11,6 @@
 typedef struct DbContext {
   sqlite3 *db;
   char file[BUF_LEN];
-  // sqlite3 *history;
 } DbContext;
 
 extern int header_printed;
@@ -27,5 +26,6 @@ void addHistoryEntry(const char *line);
 int getHistoryFromDb_init();
 int getHistoryFromDb_next(void);
 int prepareUnionStmt();
+DbContext getCtx();
 
 #endif // __DB__

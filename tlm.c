@@ -53,17 +53,21 @@ static char *queryBuilderShow(struct tokens *arr, int count) {
   if (count != 2)
     return NULL;
 
-  char *arg = arr[1].token;
+  char *table = arr[1].token;
 
-  if (!strncmp(arg, "tlm_history", 11)) {
-    return NULL;
-  }
-
-  if (!strncmp(arg, "tlm", 3)) {
+  if (strcmp(table, "tlm") == 0) {
     return queryBuilderShowTables();
   }
 
-  return queryBuilderShowTable(arg);
+  if (strcmp(table, "tlm_auth") == 0) {
+    return NULL;
+  }
+
+  if (strcmp(table, "tlm_history") == 0) {
+    return NULL;
+  }
+
+  return queryBuilderShowTable(table);
 }
 
 static char *queryBuilderCreate(struct tokens *arr, int count) {
@@ -74,6 +78,11 @@ static char *queryBuilderCreate(struct tokens *arr, int count) {
 
   if (strcmp(table, "tlm") == 0) {
     printf("Error: 'tlm' is a reserved keyword.\n");
+    return NULL;
+  }
+
+  if (strcmp(table, "tlm_auth") == 0) {
+    printf("Error: 'tlm_auth' is a reserved keyword.\n");
     return NULL;
   }
 
@@ -111,6 +120,11 @@ static char *queryBuilderAdd(struct tokens *arr, int count) {
     return NULL;
   }
 
+  if (strcmp(table, "tlm_auth") == 0) {
+    printf("Error: 'tlm_auth' is a reserved keyword.\n");
+    return NULL;
+  }
+
   if (strcmp(table, "tlm_history") == 0) {
     printf("Error: 'tlm_history' is a reserved keyword.\n");
     return NULL;
@@ -143,6 +157,11 @@ static char *queryBuilderRm(struct tokens *arr, int count) {
     return NULL;
   }
 
+  if (strcmp(table, "tlm_auth") == 0) {
+    printf("Error: 'tlm_auth' is a reserved keyword.\n");
+    return NULL;
+  }
+
   if (strcmp(table, "tlm_history") == 0) {
     printf("Error: 'tlm_history' is a reserved keyword.\n");
     return NULL;
@@ -170,6 +189,11 @@ static char *queryBuilderUpdate(struct tokens *arr, int count) {
 
   if (strcmp(table, "tlm") == 0) {
     printf("Error: 'tlm' is a reserved keyword.\n");
+    return NULL;
+  }
+
+  if (strcmp(table, "tlm_auth") == 0) {
+    printf("Error: 'tlm_auth' is a reserved keyword.\n");
     return NULL;
   }
 
