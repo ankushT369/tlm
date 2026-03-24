@@ -6,6 +6,7 @@
 #include "db.h"
 #include "linenoise.h"
 #include "ops.h"
+#include "security.h"
 #include "tlm.h"
 
 #include <ncurses.h>
@@ -16,6 +17,7 @@
 
 #define MAX_ITEMS 1000000
 #define MAX_LEN 1024
+#define MAX_PASS_LEN 32
 
 char *items[MAX_ITEMS];
 int item_count = 0;
@@ -197,6 +199,7 @@ int main(int argc, char **argv) {
   char *line;
   char *prgname = argv[0];
   int async = 1;
+  int no_history = 1;
   double start_time, end_time, elapsed;
 
   const char *db_file = "tlm.db";
@@ -229,6 +232,25 @@ int main(int argc, char **argv) {
   int ret = openFile(db_file);
   if (ret != 0)
     return 1;
+
+  int exists = checkAuthExists();
+  if (exists) {
+    linenoiseMaskModeEnable();
+    char *input = linenoise("Enter password: ");
+    linenoiseMaskModeDisable();
+
+    if (!input)
+      return 1;
+
+    if (!verifyPassword(input)) {
+      printf("Wrong password!\n");
+      linenoiseFree(input);
+      return 1;
+    }
+
+    printf("Access granted.\n");
+    linenoiseFree(input);
+  }
 
   initHistoryDb();
   loadHistoryFromDb();
@@ -293,7 +315,8 @@ int main(int argc, char **argv) {
 
       // printf("[INFO] Query: %s\n", query);
       if (query == NULL) {
-        addHistoryEntry(line);
+        if (!no_history)
+          addHistoryEntry(line);
         printf("Invalid Query\n");
         free(query);
         continue;
@@ -317,10 +340,54 @@ int main(int argc, char **argv) {
       }
 
       printf("Execution Ok %.3fms\n", elapsed);
-      addHistoryEntry(line);
+      if (!no_history)
+        addHistoryEntry(line);
 
       free(query);
 
+    } else if (!strncmp(line, "/auth", 5)) {
+      int exists = checkAuthExists();
+      char password[64];
+
+      if (!exists) {
+        memset(password, '\0', sizeof(password));
+
+        linenoiseMaskModeEnable();
+
+        char *input = linenoise("Enter password: ");
+        if (input == NULL) {
+          printf("Error reading password\n");
+          return 1;
+        }
+
+        size_t len = strlen(input);
+
+        if (len == 0 || len > 32) {
+          printf("Password must be between 1 and 32 characters\n");
+          linenoiseFree(input);
+          linenoiseMaskModeDisable();
+          return 1;
+        }
+
+        strncpy(password, input, sizeof(password) - 1);
+        password[sizeof(password) - 1] = '\0';
+
+        linenoiseFree(input);
+        linenoiseMaskModeDisable();
+
+        if (authDB(password) != 0) {
+          printf("Failed to initialize auth\n");
+          return 1;
+        }
+
+        printf("Password set successfully.\n Next time you login you have to "
+               "enter the password.\n Tip: You can verify your email for "
+               "recovery\n");
+      }
+    } else if (!strncmp(line, "/noauth", 7)) {
+
+    } else if (!strncmp(line, "/nohistory", 10)) {
+      no_history = 1;
     } else if (!strncmp(line, "/historylen", 11)) {
       /* The "/historylen" command will change the history len. */
       // int len = atoi(line+11);
@@ -338,7 +405,8 @@ int main(int argc, char **argv) {
         // There IS more text after "/search"
         printf("Has argument: '%s'\n", rest);
       } else {
-        addHistoryEntry(line);
+        if (!no_history)
+          addHistoryEntry(line);
         m();
         printf("No argument!\n");
       }

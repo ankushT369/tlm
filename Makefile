@@ -3,14 +3,14 @@ CC      = gcc
 TARGET  = tlm
 
 # Source files
-SRC     = main.c db.c ops.c tlm.c linenoise.c sqlite3.c
+SRC     = main.c db.c ops.c tlm.c linenoise.c sqlite3.c security.c
 OBJ     = $(addprefix build/,$(SRC:.c=.o))
 
 # Include paths
 INC     = -I .
 
 # Libraries
-LIBS    = -lm -lpthread -lncurses -ldl
+LIBS    = -lm -lpthread -lncurses -ldl -lcrypto
 
 # Performance flags
 CFLAGS_COMMON = -Wall -Wextra

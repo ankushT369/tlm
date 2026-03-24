@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
 
 DbContext ctx;
 
@@ -108,6 +109,8 @@ static void save_command_to_db(const char *cmd) {
 
 int openFile(const char *file) {
   int rc;
+  umask(077);
+
   if (strlen(file) >= BUF_LEN) {
     printf("Cannot create file\n");
     return 1;
@@ -123,6 +126,8 @@ int openFile(const char *file) {
     printf("Cannot open database: %s\n", sqlite3_errmsg(ctx.db));
     return 1;
   }
+
+  chmod(ctx.file, 0600);
 
   return 0;
 }
@@ -254,3 +259,5 @@ void addHistoryEntry(const char *cmd) {
 
   save_command_to_db(cmd);
 }
+
+DbContext getCtx() { return ctx; }
